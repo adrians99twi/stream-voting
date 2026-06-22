@@ -51,4 +51,24 @@ function getRounds(mode) {
   return data[mode] || [];
 }
 
-module.exports = { readAll, writeAll, addRound, deleteRound, getRounds };
+// Importiert ein Array von Fragen auf einmal (fuegt zum bestehenden Pool hinzu).
+function importRounds(mode, entries) {
+  const data = readAll();
+  if (!data[mode]) data[mode] = [];
+  const newRounds = entries.map((entry) => ({
+    id: require('crypto').randomUUID(),
+    createdAt: Date.now(),
+    content: {
+      text: entry.text || '',
+      imageUrl: entry.imageUrl || null,
+      label1: entry.label1 || null,
+      label2: entry.label2 || null,
+    },
+    durationSeconds: entry.durationSeconds || 60,
+  }));
+  data[mode].push(...newRounds);
+  writeAll(data);
+  return data[mode];
+}
+
+module.exports = { readAll, writeAll, addRound, deleteRound, getRounds, importRounds };

@@ -75,6 +75,18 @@
 
       <div class="panel">
         <div class="panel-title">Bibliothek (<span id="library-mode-label">Hot for no reason</span>)</div>
+
+        <div class="library-actions">
+          <button id="random-btn" class="btn-primary">🎲 Zufällig starten</button>
+          <label class="btn-secondary import-label">
+            📥 JSON importieren
+            <input type="file" id="import-file" accept=".json" style="display:none" />
+          </label>
+          <button id="clear-btn" class="btn-danger">🗑 Alle löschen</button>
+        </div>
+
+        <div id="pool-status" class="pool-status"></div>
+
         <div id="library-list" class="library-list">
           <div class="empty-hint">Noch keine Runden gespeichert.</div>
         </div>

@@ -59,6 +59,16 @@ app.delete('/api/rounds/:mode/:id', (req, res) => {
   res.json(all);
 });
 
+// Importiert eine JSON-Datei mit vielen Fragen auf einmal
+app.post('/api/rounds/:mode/import', (req, res) => {
+  const { entries } = req.body;
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return res.status(400).json({ error: 'entries muss ein nicht-leeres Array sein' });
+  }
+  const all = store.importRounds(req.params.mode, entries);
+  res.json({ imported: entries.length, total: all.length });
+});
+
 // ---- Voting Engine ----
 const voteEngine = new VoteEngine();
 

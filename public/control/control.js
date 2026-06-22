@@ -5,6 +5,11 @@ let currentMode = 'hot';
 let uploadedImageUrl = null;
 let currentLiveState = null;
 
+// Pool-Verwaltung: welche IDs wurden in dieser Session bereits gespielt?
+// Wird beim Abbrechen einer Runde NICHT geleert — erst wenn explizit "Neue Runde"
+// gestartet wird und alle Fragen durch sind, oder beim Seite-neu-laden.
+const playedIds = { hot: new Set(), flag: new Set(), either: new Set() };
+
 const MODE_LABELS = {
   hot: 'Hot for no reason',
   flag: 'Red / Green Flag',
@@ -22,6 +27,10 @@ const modeButtons = document.querySelectorAll('.mode-btn');
 const eitherLabelsBlock = document.getElementById('either-labels');
 const libraryModeLabel = document.getElementById('library-mode-label');
 const libraryList = document.getElementById('library-list');
+const randomBtn = document.getElementById('random-btn');
+const importFileInput = document.getElementById('import-file');
+const clearBtn = document.getElementById('clear-btn');
+const poolStatus = document.getElementById('pool-status');
 
 const fieldText = document.getElementById('field-text');
 const fieldImage = document.getElementById('field-image');
@@ -155,18 +164,20 @@ function startRound(mode, content, durationSeconds) {
 async function loadLibrary() {
   const res = await fetch('/api/rounds/' + currentMode);
   const rounds = await res.json();
+  updatePoolStatus(rounds);
   libraryList.innerHTML = '';
   if (!rounds.length) {
-    libraryList.innerHTML = '<div class="empty-hint">Noch keine Runden gespeichert.</div>';
+    libraryList.innerHTML = '<div class="empty-hint">Noch keine Runden gespeichert. Importiere eine JSON-Datei oder füge einzelne Runden oben hinzu.</div>';
     return;
   }
   rounds.slice().reverse().forEach((round) => {
     const item = document.createElement('div');
-    item.className = 'library-item';
+    const played = playedIds[currentMode].has(round.id);
+    item.className = 'library-item' + (played ? ' played' : '');
 
     const textSpan = document.createElement('div');
     textSpan.className = 'library-item-text';
-    textSpan.textContent = round.content.text || '(nur Bild)';
+    textSpan.textContent = (played ? '✓ ' : '') + (round.content.text || '(nur Bild)');
 
     const actions = document.createElement('div');
     actions.className = 'library-item-actions';
@@ -175,7 +186,9 @@ async function loadLibrary() {
     startBtn.className = 'btn-primary';
     startBtn.textContent = 'Starten';
     startBtn.addEventListener('click', () => {
+      playedIds[currentMode].add(round.id);
       startRound(currentMode, round.content, round.durationSeconds || 60);
+      loadLibrary();
     });
 
     const deleteBtn = document.createElement('button');
@@ -183,6 +196,7 @@ async function loadLibrary() {
     deleteBtn.textContent = '🗑';
     deleteBtn.addEventListener('click', async () => {
       await fetch('/api/rounds/' + currentMode + '/' + round.id, { method: 'DELETE' });
+      playedIds[currentMode].delete(round.id);
       loadLibrary();
     });
 
@@ -193,6 +207,88 @@ async function loadLibrary() {
     libraryList.appendChild(item);
   });
 }
+
+function updatePoolStatus(rounds) {
+  if (!rounds || rounds.length === 0) {
+    poolStatus.textContent = '';
+    return;
+  }
+  const played = playedIds[currentMode].size;
+  const remaining = rounds.length - played;
+  if (remaining === 0) {
+    poolStatus.textContent = `Alle ${rounds.length} Fragen gespielt — Pool wird beim nächsten Zufallsstart zurückgesetzt.`;
+  } else {
+    poolStatus.textContent = `${remaining} von ${rounds.length} Fragen noch nicht gespielt`;
+  }
+}
+
+// ---------- Zufällig starten ----------
+randomBtn.addEventListener('click', async () => {
+  const res = await fetch('/api/rounds/' + currentMode);
+  const rounds = await res.json();
+  if (!rounds.length) {
+    alert('Keine Fragen in der Bibliothek. Importiere zuerst eine JSON-Datei.');
+    return;
+  }
+
+  // Ungespielt bevorzugen
+  let unplayed = rounds.filter((r) => !playedIds[currentMode].has(r.id));
+
+  // Alle gespielt? Pool zurücksetzen
+  if (unplayed.length === 0) {
+    playedIds[currentMode].clear();
+    unplayed = rounds;
+  }
+
+  const pick = unplayed[Math.floor(Math.random() * unplayed.length)];
+  playedIds[currentMode].add(pick.id);
+  startRound(currentMode, pick.content, pick.durationSeconds || 60);
+  loadLibrary();
+});
+
+// ---------- JSON Import ----------
+importFileInput.addEventListener('change', async () => {
+  const file = importFileInput.files[0];
+  if (!file) return;
+
+  let entries;
+  try {
+    const text = await file.text();
+    entries = JSON.parse(text);
+  } catch (e) {
+    alert('Fehler beim Lesen der Datei. Ist es eine gültige JSON-Datei?');
+    importFileInput.value = '';
+    return;
+  }
+
+  if (!Array.isArray(entries)) {
+    alert('Die JSON-Datei muss ein Array sein (mit eckigen Klammern anfangen).');
+    importFileInput.value = '';
+    return;
+  }
+
+  const res = await fetch('/api/rounds/' + currentMode + '/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entries }),
+  });
+  const result = await res.json();
+  alert(`✅ ${result.imported} Fragen importiert! Gesamt im Pool: ${result.total}`);
+  importFileInput.value = '';
+  loadLibrary();
+});
+
+// ---------- Alle löschen ----------
+clearBtn.addEventListener('click', async () => {
+  const rounds = await (await fetch('/api/rounds/' + currentMode)).json();
+  if (!rounds.length) return;
+  if (!confirm(`Alle ${rounds.length} Fragen aus "${MODE_LABELS[currentMode]}" löschen?`)) return;
+  for (const r of rounds) {
+    await fetch('/api/rounds/' + currentMode + '/' + r.id, { method: 'DELETE' });
+  }
+  playedIds[currentMode].clear();
+  loadLibrary();
+});
 
 // ---------- Live Kontrolle ----------
 extendBtn.addEventListener('click', () => socket.emit('round:extend', 10));
