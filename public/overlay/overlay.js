@@ -37,8 +37,10 @@ function applyMode(mode, content) {
 
 function renderContent(content) {
   textEl.textContent = (content && content.text) || '';
-  if (content && content.imageUrl) {
-    imageEl.src = content.imageUrl;
+  const newUrl = (content && content.imageUrl) || '';
+  if (newUrl) {
+    // src nur neu setzen wenn sich die URL geaendert hat — verhindert Neu-Laden bei jedem Tick
+    if (imageEl.src !== newUrl) imageEl.src = newUrl;
     imageEl.classList.remove('hidden');
   } else {
     imageEl.classList.add('hidden');

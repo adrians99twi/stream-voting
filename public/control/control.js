@@ -292,7 +292,26 @@ clearBtn.addEventListener('click', async () => {
 
 // ---------- Live Kontrolle ----------
 extendBtn.addEventListener('click', () => socket.emit('round:extend', 10));
-cancelBtn.addEventListener('click', () => socket.emit('round:cancel'));
+
+cancelBtn.addEventListener('click', () => {
+  socket.emit('round:cancel');
+  // Pool NICHT zurücksetzen — gespielte Fragen bleiben markiert
+});
+
+// "Nächste Frage" — aktuelle Runde stoppen und sofort die nächste zufällige starten
+const nextBtn = document.getElementById('next-btn');
+nextBtn.addEventListener('click', async () => {
+  socket.emit('round:cancel');
+  // Kurz warten bis der Cancel verarbeitet ist, dann nächste Frage
+  setTimeout(() => randomBtn.click(), 300);
+});
+
+// "Pool zurücksetzen" — alle gespielten Markierungen löschen
+const resetPoolBtn = document.getElementById('reset-pool-btn');
+resetPoolBtn.addEventListener('click', () => {
+  playedIds[currentMode].clear();
+  loadLibrary();
+});
 
 function renderLiveState(state) {
   currentLiveState = state;
@@ -310,8 +329,11 @@ function renderLiveState(state) {
 
   liveModeLabel.textContent = MODE_LABELS[state.mode] || state.mode;
   liveText.textContent = (state.content && state.content.text) || '';
-  if (state.content && state.content.imageUrl) {
-    liveImage.src = state.content.imageUrl;
+
+  // src nur neu setzen wenn sich URL geaendert hat — verhindert Ruckeln bei jedem Tick
+  const newUrl = (state.content && state.content.imageUrl) || '';
+  if (newUrl) {
+    if (liveImage.src !== newUrl) liveImage.src = newUrl;
     liveImage.classList.remove('hidden');
   } else {
     liveImage.classList.add('hidden');
@@ -330,6 +352,7 @@ function renderLiveState(state) {
 
   extendBtn.disabled = !state.isActive;
   cancelBtn.disabled = !state.isActive;
+  nextBtn.disabled = !state.isActive && state.isActive !== false;
 }
 
 socket.on('round:started', renderLiveState);

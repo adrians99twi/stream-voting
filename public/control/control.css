@@ -365,6 +365,11 @@ input[type="file"] {
 .live-actions { display: flex; gap: 10px; }
 .live-actions button { flex: 1; }
 
+.live-actions-secondary {
+  display: flex;
+  margin-top: 8px;
+}
+
 /* ---------- Chat Feed ---------- */
 .chat-feed {
   max-height: 220px;
