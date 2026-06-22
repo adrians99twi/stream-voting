@@ -1,0 +1,291 @@
+/* overlay.css */
+
+html, body {
+  background: transparent;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.idle-hint {
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  font-size: 18px;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- Karte ---------- */
+.vote-card {
+  position: relative;
+  width: 640px;
+  max-width: 92vw;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(2px);
+}
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-align: center;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.content-block {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.content-image {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.content-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+/* ---------- Optionen ---------- */
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.option-2 { flex-direction: row; }
+
+.option-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.option-1 .option-key { background: var(--accent-a); color: #0E0B14; }
+.option-2 .option-key { background: var(--accent-b); color: #0E0B14; }
+
+/* ---------- Balken ---------- */
+.bar-wrap {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-soft);
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#bar-1 {
+  background: linear-gradient(90deg, var(--accent-a-dim), var(--accent-a));
+  box-shadow: 0 0 16px var(--accent-a-glow);
+}
+#bar-2 {
+  background: linear-gradient(90deg, var(--accent-b), var(--accent-b-dim));
+  box-shadow: 0 0 16px var(--accent-b-glow);
+  margin-left: auto;
+}
+
+.bar-center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255,255,255,0.25);
+}
+
+.pct-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-family: var(--font-display);
+}
+
+.pct {
+  font-size: 22px;
+  font-weight: 700;
+}
+#pct-1 { color: var(--accent-a); }
+#pct-2 { color: var(--accent-b); }
+
+.vote-count {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Timer Ring ---------- */
+.timer-wrap {
+  position: absolute;
+  top: -22px;
+  right: -22px;
+  width: 64px;
+  height: 64px;
+}
+
+.timer-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-ring-bg {
+  fill: var(--bg-void);
+  stroke: var(--bg-panel-raised);
+  stroke-width: 8;
+}
+
+.timer-ring-fg {
+  fill: none;
+  stroke: url(#none);
+  stroke: var(--accent-a);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.25s linear, stroke 0.3s ease;
+}
+
+.timer-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.timer-wrap.urgent .timer-number { color: var(--flag-red); }
+.timer-wrap.urgent { animation: pulse-urgent 0.6s infinite; }
+
+@keyframes pulse-urgent {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ---------- Ergebnis Banner ---------- */
+.result-banner {
+  margin-top: 16px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  animation: result-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes result-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.result-banner.winner-1 {
+  background: rgba(255,255,255,0.06);
+  color: var(--accent-a);
+  border: 1px solid var(--accent-a);
+}
+.result-banner.winner-2 {
+  background: rgba(255,255,255,0.06);
+  color: var(--accent-b);
+  border: 1px solid var(--accent-b);
+}
+.result-banner.winner-tie {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+}
+
+/* ---------- Modus-Themes ---------- */
+.mode-hot {
+  --accent-a: var(--hot-a);
+  --accent-b: var(--hot-b);
+  --accent-a-dim: #7a1149;
+  --accent-b-dim: #7a3d1e;
+  --accent-a-glow: var(--hot-glow);
+  --accent-b-glow: var(--hot-glow);
+}
+
+.mode-flag {
+  --accent-a: var(--flag-green);
+  --accent-b: var(--flag-red);
+  --accent-a-dim: #15634a;
+  --accent-b-dim: #6e1521;
+  --accent-a-glow: var(--flag-green-glow);
+  --accent-b-glow: var(--flag-red-glow);
+}
+
+.mode-either {
+  --accent-a: var(--either-a);
+  --accent-b: var(--either-b);
+  --accent-a-dim: #1d5a87;
+  --accent-b-dim: #5a3380;
+  --accent-a-glow: var(--either-a-glow);
+  --accent-b-glow: var(--either-b-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vote-card, .result-banner { animation: none; }
+  .timer-wrap.urgent { animation: none; }
+  .bar-fill { transition: none; }
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stream Voting – Steuerung</title>
+<link rel="stylesheet" href="/shared/tokens.css" />
+<link rel="stylesheet" href="control.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Kopfzeile -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      Stream&nbsp;Voting
+    </div>
+    <div class="twitch-status" id="twitch-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Nicht verbunden</span>
+      <input type="text" id="channel-input" placeholder="dein-twitch-name" />
+      <button id="connect-btn">Verbinden</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- Linke Spalte: Modus-Auswahl + Bibliothek -->
+    <aside class="sidebar">
+      <div class="mode-switch">
+        <button class="mode-btn active" data-mode="hot">🔥 Hot for no reason</button>
+        <button class="mode-btn" data-mode="flag">🚩 Red / Green Flag</button>
+        <button class="mode-btn" data-mode="either">⚖️ Entweder Oder</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Neue Runde anlegen</div>
+
+        <form id="round-form">
+          <label class="field-label">Text / Beschreibung</label>
+          <textarea id="field-text" rows="3" placeholder="z.B. Trägt Socken in Sandalen"></textarea>
+
+          <label class="field-label">Bild (optional)</label>
+          <div class="image-upload">
+            <input type="file" id="field-image" accept="image/*" />
+            <img id="image-preview" class="hidden" />
+          </div>
+
+          <div id="either-labels" class="either-labels hidden">
+            <div>
+              <label class="field-label">Option A</label>
+              <input type="text" id="field-label1" placeholder="z.B. Pizza" />
+            </div>
+            <div>
+              <label class="field-label">Option B</label>
+              <input type="text" id="field-label2" placeholder="z.B. Pasta" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label class="field-label">Timer (Sekunden)</label>
+              <input type="number" id="field-duration" value="60" min="10" max="600" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-secondary" id="save-btn">In Bibliothek speichern</button>
+            <button type="button" class="btn-primary" id="start-now-btn">Sofort starten</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Bibliothek (<span id="library-mode-label">Hot for no reason</span>)</div>
+        <div id="library-list" class="library-list">
+          <div class="empty-hint">Noch keine Runden gespeichert.</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mittlere Spalte: Live Kontrolle -->
+    <main class="main">
+      <div class="panel live-panel">
+        <div class="panel-title">Live-Kontrolle</div>
+
+        <div id="no-round" class="no-round-hint">
+          Keine Runde aktiv. Wähle links eine Runde aus der Bibliothek oder starte eine neue.
+        </div>
+
+        <div id="live-round" class="live-round hidden">
+          <div class="live-eyebrow" id="live-mode-label"></div>
+          <div class="live-text" id="live-text"></div>
+          <img id="live-image" class="live-image hidden" />
+
+          <div class="live-bars">
+            <div class="live-bar-row">
+              <span id="live-label-1"></span>
+              <div class="live-bar-track"><div class="live-bar-fill fill-1" id="live-bar-1"></div></div>
+              <span id="live-pct-1">50%</span>
+            </div>
+            <div class="live-bar-row">
+              <span id="live-label-2"></span>
+              <div class="live-bar-track"><div class="live-bar-fill fill-2" id="live-bar-2"></div></div>
+              <span id="live-pct-2">50%</span>
+            </div>
+          </div>
+
+          <div class="live-timer">
+            <span id="live-timer-text">60s</span>
+            <span id="live-total-votes" class="live-total-votes">0 Stimmen</span>
+          </div>
+
+          <div class="live-actions">
+            <button id="extend-btn" class="btn-secondary">+10 Sek</button>
+            <button id="cancel-btn" class="btn-danger">Runde abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Chat-Feed (live)</div>
+        <div id="chat-feed" class="chat-feed">
+          <div class="empty-hint">Noch keine Nachrichten.</div>
+        </div>
+      </div>
+
+      <div class="panel hint-panel">
+        <div class="panel-title">Overlay-Link für OBS</div>
+        <p class="hint-text">Füge diese Adresse als <strong>Browser-Quelle</strong> in OBS/Streamlabs ein (Hintergrund ist transparent):</p>
+        <code id="overlay-url" class="overlay-url"></code>
+        <button id="copy-overlay-url" class="btn-secondary small">Link kopieren</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="control.js"></script>
+</body>
+</html>

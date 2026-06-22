@@ -1,0 +1,51 @@
+/* tokens.css - gemeinsames Design-System fuer Steuerung + Overlay */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Basis */
+  --bg-void: #0E0B14;
+  --bg-panel: #16121F;
+  --bg-panel-raised: #1E1830;
+  --border-soft: rgba(255,255,255,0.08);
+  --text-primary: #F5F2FA;
+  --text-muted: #9C93AE;
+
+  /* Modus: Hot for no reason */
+  --hot-a: #FF2E92;
+  --hot-b: #FF7A3D;
+  --hot-glow: rgba(255, 46, 146, 0.45);
+
+  /* Modus: Red / Green Flag */
+  --flag-red: #E8344B;
+  --flag-green: #34D399;
+  --flag-red-glow: rgba(232, 52, 75, 0.45);
+  --flag-green-glow: rgba(52, 211, 153, 0.45);
+
+  /* Modus: Entweder Oder */
+  --either-a: #3DA9FC;
+  --either-b: #A45EE5;
+  --either-a-glow: rgba(61, 169, 252, 0.45);
+  --either-b-glow: rgba(164, 94, 229, 0.45);
+
+  /* Typografie */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--bg-panel-raised); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }

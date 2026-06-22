@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Voting Overlay</title>
+<link rel="stylesheet" href="/shared/tokens.css" />
+<link rel="stylesheet" href="overlay.css" />
+</head>
+<body>
+
+  <div id="stage" class="stage">
+
+    <!-- Idle-Zustand: nichts laeuft gerade -->
+    <div id="idle" class="idle-hint">
+      <span>Warte auf naechste Runde&hellip;</span>
+    </div>
+
+    <!-- Karte fuer eine laufende / beendete Runde -->
+    <div id="card" class="vote-card mode-hot hidden">
+
+      <div class="eyebrow" id="eyebrow">HOT FOR NO REASON</div>
+
+      <div class="content-block">
+        <img id="content-image" class="content-image hidden" alt="" />
+        <div id="content-text" class="content-text"></div>
+      </div>
+
+      <!-- Optionen-Labels, je nach Modus unterschiedlich beschriftet -->
+      <div class="options-row">
+        <div class="option-label option-1">
+          <span class="option-key">1</span>
+          <span class="option-name" id="label-1">Ja</span>
+        </div>
+        <div class="option-label option-2">
+          <span class="option-name" id="label-2">Nein</span>
+          <span class="option-key">2</span>
+        </div>
+      </div>
+
+      <!-- Live Balken -->
+      <div class="bar-wrap">
+        <div class="bar-fill" id="bar-1" style="width:50%"></div>
+        <div class="bar-fill" id="bar-2" style="width:50%"></div>
+        <div class="bar-center-line"></div>
+      </div>
+
+      <div class="pct-row">
+        <div class="pct" id="pct-1">50%</div>
+        <div class="vote-count" id="vote-count">0 Stimmen</div>
+        <div class="pct" id="pct-2">50%</div>
+      </div>
+
+      <!-- Countdown Ring -->
+      <div class="timer-wrap">
+        <svg viewBox="0 0 100 100" class="timer-ring">
+          <circle cx="50" cy="50" r="45" class="timer-ring-bg"></circle>
+          <circle cx="50" cy="50" r="45" class="timer-ring-fg" id="timer-ring-fg"></circle>
+        </svg>
+        <div class="timer-number" id="timer-number">60</div>
+      </div>
+
+      <!-- Ergebnis-Banner (erscheint nach Ablauf) -->
+      <div class="result-banner hidden" id="result-banner"></div>
+
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="overlay.js"></script>
+</body>
+</html>
