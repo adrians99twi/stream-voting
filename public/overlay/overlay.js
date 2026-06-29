@@ -24,11 +24,12 @@ const MODE_META = {
   hot: { eyebrow: 'HOT FOR NO REASON', label1: 'Ja', label2: 'Nein', cls: 'mode-hot' },
   flag: { eyebrow: 'RED OR GREEN FLAG', label1: 'Green Flag', label2: 'Red Flag', cls: 'mode-flag' },
   either: { eyebrow: 'ENTWEDER ODER', label1: 'Option A', label2: 'Option B', cls: 'mode-either' },
+  realfake: { eyebrow: 'REAL OR FAKE', label1: 'Real', label2: 'Fake', cls: 'mode-realfake' },
 };
 
 function applyMode(mode, content) {
   const meta = MODE_META[mode] || MODE_META.hot;
-  cardEl.classList.remove('mode-hot', 'mode-flag', 'mode-either');
+  cardEl.classList.remove('mode-hot', 'mode-flag', 'mode-either', 'mode-realfake');
   cardEl.classList.add(meta.cls);
   eyebrowEl.textContent = meta.eyebrow;
   label1El.textContent = (content && content.label1) || meta.label1;

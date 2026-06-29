@@ -14,12 +14,14 @@ const MODE_LABELS = {
   hot: 'Hot for no reason',
   flag: 'Red / Green Flag',
   either: 'Entweder Oder',
+  realfake: 'Real or Fake',
 };
 
 const DEFAULT_LABELS = {
   hot: { label1: 'Ja', label2: 'Nein' },
   flag: { label1: 'Green Flag', label2: 'Red Flag' },
   either: { label1: 'Option A', label2: 'Option B' },
+  realfake: { label1: 'Real', label2: 'Fake' },
 };
 
 // ---------- DOM Referenzen ----------
@@ -77,7 +79,20 @@ copyOverlayBtn.addEventListener('click', () => {
   setTimeout(() => (copyOverlayBtn.textContent = 'Link kopieren'), 1500);
 });
 
+// Leaderboard-URL
+const leaderboardUrlEl = document.getElementById('leaderboard-url');
+const copyLeaderboardBtn = document.getElementById('copy-leaderboard-url');
+const leaderboardFullUrl = window.location.origin + '/leaderboard/';
+leaderboardUrlEl.textContent = leaderboardFullUrl;
+copyLeaderboardBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(leaderboardFullUrl);
+  copyLeaderboardBtn.textContent = 'Kopiert!';
+  setTimeout(() => (copyLeaderboardBtn.textContent = 'Link kopieren'), 1500);
+});
+
 // ---------- Modus-Wechsel ----------
+const realfakePanel = document.getElementById('realfake-panel');
+
 modeButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     modeButtons.forEach((b) => b.classList.remove('active'));
@@ -85,6 +100,7 @@ modeButtons.forEach((btn) => {
     currentMode = btn.dataset.mode;
     libraryModeLabel.textContent = MODE_LABELS[currentMode];
     eitherLabelsBlock.classList.toggle('hidden', currentMode !== 'either');
+    realfakePanel.classList.toggle('hidden', currentMode !== 'realfake');
     loadLibrary();
   });
 });
@@ -414,6 +430,84 @@ socket.on('chat:message', addChatLine);
 socket.on('chat:history', (messages) => {
   messages.slice().reverse().forEach(addChatLine);
 });
+
+// ---------- Real or Fake Session-Logik ----------
+let selectedRounds = 5;
+
+const roundCountBtns = document.querySelectorAll('.round-count-btn');
+const rfSetup = document.getElementById('rf-setup');
+const rfActive = document.getElementById('rf-active');
+const rfStartSessionBtn = document.getElementById('rf-start-session');
+const rfEndSessionBtn = document.getElementById('rf-end-session');
+const rfRoundInfo = document.getElementById('rf-round-info');
+const rfReveal = document.getElementById('rf-reveal');
+const rfResolved = document.getElementById('rf-resolved');
+const rfResolvedText = document.getElementById('rf-resolved-text');
+const rfReveal1 = document.getElementById('rf-reveal-1');
+const rfReveal2 = document.getElementById('rf-reveal-2');
+
+roundCountBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    roundCountBtns.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedRounds = Number(btn.dataset.rounds);
+  });
+});
+
+rfStartSessionBtn.addEventListener('click', () => {
+  socket.emit('score:session:start', { totalRounds: selectedRounds });
+});
+
+rfEndSessionBtn.addEventListener('click', () => {
+  if (confirm('Session wirklich beenden? Der aktuelle Gewinner wird angezeigt.')) {
+    socket.emit('score:session:end');
+  }
+});
+
+rfReveal1.addEventListener('click', () => {
+  socket.emit('score:resolve', '1');
+});
+rfReveal2.addEventListener('click', () => {
+  socket.emit('score:resolve', '2');
+});
+
+// Wenn eine Real-or-Fake-Runde endet (Timer abgelaufen): Auflösungs-Buttons zeigen
+socket.on('round:ended', (state) => {
+  if (state.mode === 'realfake' && rfActive && !rfActive.classList.contains('hidden')) {
+    rfReveal.classList.remove('hidden');
+    rfResolved.classList.add('hidden');
+  }
+});
+
+socket.on('score:session:started', (state) => {
+  rfSetup.classList.add('hidden');
+  rfActive.classList.remove('hidden');
+  rfReveal.classList.add('hidden');
+  rfResolved.classList.add('hidden');
+  updateRfRoundInfo(state);
+});
+
+socket.on('score:round:resolved', (state) => {
+  rfReveal.classList.add('hidden');
+  rfResolved.classList.remove('hidden');
+  const answerText = state.correctAnswer === '1' ? 'Real ✓' : 'Fake ✗';
+  rfResolvedText.textContent = `Antwort war: ${answerText} — Punkte vergeben!`;
+  updateRfRoundInfo(state);
+});
+
+socket.on('score:session:ended', (state) => {
+  rfSetup.classList.remove('hidden');
+  rfActive.classList.add('hidden');
+  if (state.leaderboard && state.leaderboard.length > 0) {
+    rfResolvedText.textContent = '';
+  }
+});
+
+function updateRfRoundInfo(state) {
+  if (rfRoundInfo) {
+    rfRoundInfo.textContent = `Runde ${state.currentRound} / ${state.totalRounds}`;
+  }
+}
 
 // ---------- Initiales Laden ----------
 loadLibrary();

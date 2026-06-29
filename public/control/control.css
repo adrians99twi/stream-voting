@@ -407,3 +407,71 @@ input[type="file"] {
   margin-bottom: 10px;
   word-break: break-all;
 }
+
+/* ---------- Real or Fake Session ---------- */
+.round-count-select {
+  display: flex;
+  gap: 8px;
+}
+
+.round-count-btn {
+  flex: 1;
+  background: var(--bg-panel-raised);
+  color: var(--text-muted);
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 0;
+}
+
+.round-count-btn.active {
+  color: var(--text-primary);
+  border-color: #A45EE5;
+  background: linear-gradient(180deg, rgba(164,94,229,0.18), transparent);
+}
+
+.rf-session-status {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  padding: 8px 0;
+  color: #A45EE5;
+}
+
+.rf-reveal-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-reveal {
+  flex: 1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.reveal-real {
+  background: rgba(52,211,153,0.12);
+  color: #34D399;
+  border-color: #34D399;
+}
+
+.reveal-fake {
+  background: rgba(232,52,75,0.12);
+  color: #E8344B;
+  border-color: #E8344B;
+}
+
+.rf-resolved-text {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px 0;
+  color: var(--text-primary);
+}

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Leaderboard Overlay</title>
+<link rel="stylesheet" href="/shared/tokens.css" />
+<style>
+  html, body {
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .board {
+    width: 420px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: board-enter 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  @keyframes board-enter {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .board-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #FF2E92, #A45EE5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .round-badge {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-panel-raised);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+
+  .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--border-soft);
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    animation: entry-in 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  @keyframes entry-in {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .entry.rank-1 { border-color: rgba(255,215,0,0.35); background: rgba(255,215,0,0.06); }
+  .entry.rank-2 { border-color: rgba(192,192,192,0.3); background: rgba(192,192,192,0.04); }
+  .entry.rank-3 { border-color: rgba(205,127,50,0.3); background: rgba(205,127,50,0.04); }
+
+  .rank {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .rank-1 .rank { color: #FFD700; }
+  .rank-2 .rank { color: #C0C0C0; }
+  .rank-3 .rank { color: #CD7F32; }
+  .entry:not(.rank-1):not(.rank-2):not(.rank-3) .rank { color: var(--text-muted); }
+
+  .username {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .score {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: #A45EE5;
+    flex-shrink: 0;
+  }
+
+  .score-delta {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    color: #34D399;
+    flex-shrink: 0;
+    min-width: 48px;
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .score-delta.visible { opacity: 1; }
+
+  /* Leerer Zustand */
+  .empty-state {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* Sieger-Banner */
+  .winner-banner {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 0 8px;
+    border-top: 1px solid var(--border-soft);
+    margin-top: 16px;
+    text-align: center;
+  }
+  .winner-banner.visible { display: flex; }
+  .winner-crown { font-size: 32px; animation: crown-bounce 0.6s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes crown-bounce { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(0deg); } }
+  .winner-label { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .winner-name { font-family: var(--font-display); font-weight: 700; font-size: 22px; background: linear-gradient(90deg, #FFD700, #FF2E92); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .winner-score { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="board" id="board">
+  <div class="board-header">
+    <div class="board-title">🕵️ Real or Fake</div>
+    <div class="round-badge" id="round-badge">Warte auf Start…</div>
+  </div>
+
+  <div class="entries" id="entries">
+    <div class="empty-state">Noch keine Punkte — Session starten!</div>
+  </div>
+
+  <div class="winner-banner" id="winner-banner">
+    <div class="winner-crown">👑</div>
+    <div class="winner-label">Gewinner</div>
+    <div class="winner-name" id="winner-name"></div>
+    <div class="winner-score" id="winner-score"></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+const entriesEl = document.getElementById('entries');
+const roundBadgeEl = document.getElementById('round-badge');
+const winnerBannerEl = document.getElementById('winner-banner');
+const winnerNameEl = document.getElementById('winner-name');
+const winnerScoreEl = document.getElementById('winner-score');
+
+// Merkt sich letzte Scores um Deltas zu berechnen
+let lastScores = {};
+// Merkt sich die letzten Punkte die jemand bekommen hat (fuer +X Anzeige)
+let lastDeltas = {};
+
+function renderLeaderboard(state) {
+  roundBadgeEl.textContent = state.currentRound > 0
+    ? `Runde ${state.currentRound} / ${state.totalRounds}`
+    : 'Warte auf Start…';
+
+  if (!state.leaderboard || state.leaderboard.length === 0) {
+    entriesEl.innerHTML = '<div class="empty-state">Noch keine Punkte!</div>';
+    return;
+  }
+
+  entriesEl.innerHTML = '';
+  state.leaderboard.forEach((entry, i) => {
+    const rank = i + 1;
+    const delta = lastDeltas[entry.username] || 0;
+
+    const el = document.createElement('div');
+    el.className = `entry${rank <= 3 ? ` rank-${rank}` : ''}`;
+    el.style.animationDelay = `${i * 60}ms`;
+
+    el.innerHTML = `
+      <span class="rank">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</span>
+      <span class="username">${entry.username}</span>
+      <span class="score-delta ${delta > 0 ? 'visible' : ''}">+${delta}</span>
+      <span class="score">${entry.score.toLocaleString()}</span>
+    `;
+    entriesEl.appendChild(el);
+  });
+
+  // Deltas nach kurzer Zeit ausblenden
+  setTimeout(() => { lastDeltas = {}; }, 3000);
+}
+
+function showWinner(state) {
+  if (!state.leaderboard || state.leaderboard.length === 0) return;
+  const winner = state.leaderboard[0];
+  winnerNameEl.textContent = winner.username;
+  winnerScoreEl.textContent = winner.score.toLocaleString() + ' Punkte';
+  winnerBannerEl.classList.add('visible');
+}
+
+socket.on('score:session:started', (state) => {
+  lastScores = {};
+  lastDeltas = {};
+  winnerBannerEl.classList.remove('visible');
+  renderLeaderboard(state);
+});
+
+socket.on('score:round:resolved', (state) => {
+  // Deltas berechnen (wer hat wie viele Punkte in dieser Runde bekommen?)
+  state.leaderboard.forEach(({ username, score }) => {
+    const prev = lastScores[username] || 0;
+    const delta = score - prev;
+    if (delta > 0) lastDeltas[username] = delta;
+    lastScores[username] = score;
+  });
+  renderLeaderboard(state);
+});
+
+socket.on('score:session:ended', (state) => {
+  renderLeaderboard(state);
+  showWinner(state);
+});
+
+// Beim Laden: aktuellen Stand holen falls Session läuft
+socket.on('connect', () => {});
+</script>
+</body>
+</html>

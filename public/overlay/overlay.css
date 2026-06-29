@@ -284,6 +284,15 @@ html, body {
   --accent-b-glow: var(--either-b-glow);
 }
 
+.mode-realfake {
+  --accent-a: var(--flag-green);
+  --accent-b: var(--flag-red);
+  --accent-a-dim: #15634a;
+  --accent-b-dim: #6e1521;
+  --accent-a-glow: var(--flag-green-glow);
+  --accent-b-glow: var(--flag-red-glow);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vote-card, .result-banner { animation: none; }
   .timer-wrap.urgent { animation: none; }

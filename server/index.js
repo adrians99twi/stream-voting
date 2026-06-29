@@ -8,6 +8,7 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 
 const VoteEngine = require('./voteEngine');
+const ScoreEngine = require('./scoreEngine');
 const { createTwitchListener } = require('./twitchChat');
 const store = require('./store');
 
@@ -71,8 +72,21 @@ app.post('/api/rounds/:mode/import', (req, res) => {
 
 // ---- Voting Engine ----
 const voteEngine = new VoteEngine();
+const scoreEngine = new ScoreEngine();
 
-voteEngine.on('round:started', (state) => io.emit('round:started', state));
+// ScoreEngine-Events an alle Clients weiterleiten
+scoreEngine.on('session:started', (state) => io.emit('score:session:started', state));
+scoreEngine.on('round:resolved', (state) => io.emit('score:round:resolved', state));
+scoreEngine.on('session:ended', (state) => io.emit('score:session:ended', state));
+
+voteEngine.on('round:started', (state) => {
+  // Wenn Real-or-Fake Modus und Session aktiv: Runde in ScoreEngine registrieren
+  if (state.mode === 'realfake' && scoreEngine.isActive) {
+    scoreEngine.onRoundStart(state.durationMs);
+  }
+  io.emit('round:started', state);
+});
+
 voteEngine.on('tick', (state) => io.emit('tick', state));
 voteEngine.on('vote:registered', (state) => io.emit('tick', state));
 voteEngine.on('round:ended', (state) => io.emit('round:ended', state));
@@ -86,6 +100,10 @@ const twitch = createTwitchListener({
   channel: null,
   onMessage: ({ username, message }) => {
     const counted = voteEngine.registerVote(username, message);
+    // Wenn Real-or-Fake aktiv: Vote auch in ScoreEngine mit Timestamp registrieren
+    if (counted && voteEngine.mode === 'realfake' && scoreEngine.isActive) {
+      scoreEngine.registerVote(username, message.trim(), Date.now());
+    }
     lastMessages.unshift({ username, message, counted, ts: Date.now() });
     lastMessages = lastMessages.slice(0, 30);
     io.emit('chat:message', { username, message, counted });
@@ -139,6 +157,26 @@ io.on('connection', (socket) => {
   socket.on('round:extend', (extraSeconds) => {
     voteEngine.extendRound(extraSeconds || 10);
   });
+
+  // ---- Real or Fake Session ----
+  socket.on('score:session:start', (payload) => {
+    scoreEngine.startSession(payload.totalRounds || 10);
+  });
+
+  // Aufloesung: Du gibst an ob die Antwort '1' (Real) oder '2' (Fake) war
+  socket.on('score:resolve', (correctAnswer) => {
+    if (correctAnswer !== '1' && correctAnswer !== '2') return;
+    scoreEngine.resolveRound(correctAnswer);
+  });
+
+  socket.on('score:session:end', () => {
+    scoreEngine.endSession();
+  });
+
+  // Neuen Client auf aktuellen Score-Stand bringen
+  if (scoreEngine.isActive || scoreEngine.currentRound > 0) {
+    socket.emit('score:session:started', scoreEngine.getPublicState());
+  }
 });
 
 server.listen(PORT, () => {

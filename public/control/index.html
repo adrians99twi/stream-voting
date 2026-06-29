@@ -33,6 +33,7 @@
         <button class="mode-btn active" data-mode="hot">🔥 Hot for no reason</button>
         <button class="mode-btn" data-mode="flag">🚩 Red / Green Flag</button>
         <button class="mode-btn" data-mode="either">⚖️ Entweder Oder</button>
+        <button class="mode-btn" data-mode="realfake">🕵️ Real or Fake</button>
       </div>
 
       <div class="panel">
@@ -136,6 +137,44 @@
         </div>
       </div>
 
+      <!-- Real or Fake Session-Steuerung (nur in diesem Modus sichtbar) -->
+      <div class="panel hidden" id="realfake-panel">
+        <div class="panel-title">🕵️ Real or Fake — Session</div>
+
+        <div id="rf-setup">
+          <label class="field-label">Anzahl Runden</label>
+          <div class="round-count-select">
+            <button class="round-count-btn active" data-rounds="5">5</button>
+            <button class="round-count-btn" data-rounds="10">10</button>
+            <button class="round-count-btn" data-rounds="15">15</button>
+            <button class="round-count-btn" data-rounds="20">20</button>
+          </div>
+          <button id="rf-start-session" class="btn-primary" style="width:100%; margin-top:14px;">▶ Session starten</button>
+          <p class="hint-text" style="margin-top:10px;">Wer richtig & schnell tippt, bekommt mehr Punkte. Vergiss nicht, das Leaderboard-Overlay in OBS einzubinden!</p>
+        </div>
+
+        <div id="rf-active" class="hidden">
+          <div class="rf-session-status">
+            <span id="rf-round-info">Runde 1 / 10</span>
+          </div>
+
+          <div id="rf-reveal" class="hidden">
+            <p class="field-label" style="text-align:center; margin-top:14px;">Was war richtig?</p>
+            <div class="rf-reveal-buttons">
+              <button id="rf-reveal-1" class="btn-reveal reveal-real">✓ Real (1)</button>
+              <button id="rf-reveal-2" class="btn-reveal reveal-fake">✗ Fake (2)</button>
+            </div>
+            <p class="hint-text" style="margin-top:8px; text-align:center;">Nach Ablauf des Timers hier die richtige Antwort aufdecken — Punkte werden dann vergeben.</p>
+          </div>
+
+          <div id="rf-resolved" class="hidden">
+            <p class="rf-resolved-text" id="rf-resolved-text"></p>
+          </div>
+
+          <button id="rf-end-session" class="btn-danger small" style="width:100%; margin-top:14px;">Session beenden</button>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="panel-title">Chat-Feed (live)</div>
         <div id="chat-feed" class="chat-feed">
@@ -144,10 +183,14 @@
       </div>
 
       <div class="panel hint-panel">
-        <div class="panel-title">Overlay-Link für OBS</div>
-        <p class="hint-text">Füge diese Adresse als <strong>Browser-Quelle</strong> in OBS/Streamlabs ein (Hintergrund ist transparent):</p>
+        <div class="panel-title">Overlay-Links für OBS</div>
+        <p class="hint-text">Füge diese Adressen als <strong>Browser-Quelle</strong> in OBS/Streamlabs ein (Hintergrund ist transparent):</p>
+        <label class="field-label">Spiel-Overlay</label>
         <code id="overlay-url" class="overlay-url"></code>
         <button id="copy-overlay-url" class="btn-secondary small">Link kopieren</button>
+        <label class="field-label" style="margin-top:14px;">Leaderboard-Overlay (für Real or Fake)</label>
+        <code id="leaderboard-url" class="overlay-url"></code>
+        <button id="copy-leaderboard-url" class="btn-secondary small">Link kopieren</button>
       </div>
     </main>
   </div>
